@@ -11,3 +11,4 @@ _(ordered by first contribution)_
 - [Benchekroune](https://github.com/overben)
 - [Elad Ossadon](https://github.com/elado)
 - [Andrei Malyshev](https://github.com/k41n)
+- [Sergio Daniel Lozano](https://github.com/zheref)

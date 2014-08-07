@@ -1,4 +1,4 @@
-/*! angular-deckgrid (v0.4.4) - Copyright: 2013 - 2014, André König (andre.koenig@posteo.de) - MIT */
+/*! angular-deckgrid (v0.4.4-beta.1) - Copyright: 2013 - 2014, André König (andre.koenig@posteo.de) - MIT */
 /*
  * angular-deckgrid
  *
@@ -42,8 +42,10 @@ angular.module('akoenig.deckgrid').factory('DeckgridDescriptor', [
 
     'Deckgrid',
     '$templateCache',
+    '$window',
+    '$q',
 
-    function initialize (Deckgrid, $templateCache) {
+    function initialize (Deckgrid, $templateCache, $w, $q) {
 
         'use strict';
 
@@ -96,7 +98,10 @@ angular.module('akoenig.deckgrid').factory('DeckgridDescriptor', [
          *
          */
         Descriptor.prototype.$$link = function $$link (scope, elem, attrs, nullController, transclude) {
-            var templateKey = 'deckgrid/innerHtmlTemplate' + (++this.$$templateKeyIndex) + '.html';
+            var templateKey = 'deckgrid/innerHtmlTemplate' + (++this.$$templateKeyIndex) + '.html',
+                self = this,
+                styleReady = $q.defer(),
+                domWatch;
 
             scope.$on('$destroy', this.$$destroy.bind(this));
 
@@ -135,7 +140,21 @@ angular.module('akoenig.deckgrid').factory('DeckgridDescriptor', [
 
             scope.mother = scope.$parent;
 
-            this.$$deckgrid = Deckgrid.create(scope, elem[0]);
+            // Wait for style to be ready on deckgrid element
+            domWatch = scope.$watch(function() {
+                return $w.getComputedStyle(elem[0], ':before').content;
+            }, function(content) {
+                if (content !== '') {
+                    styleReady.resolve();
+                    // Clear the watcher once element is initialized
+                    domWatch();
+                }
+            });
+
+            styleReady.promise.then(function() {
+                self.$$deckgrid = Deckgrid.create(scope, elem[0]);
+            });
+
         };
 
         return {
